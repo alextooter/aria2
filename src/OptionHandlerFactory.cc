@@ -1276,7 +1276,7 @@ std::vector<OptionHandler*> OptionHandlerFactory::createOptionHandlers()
   }
   {
     OptionHandler* op(new LocalFilePathOptionHandler(
-        PREF_NETRC_PATH, TEXT_NETRC_PATH, util::getHomeDir() + "/.netrc",
+        PREF_NETRC_PATH, TEXT_NETRC_PATH, File::getCurrentDir() + "/.netrc",
         /* acceptStdin = */ false, 0, /* mustExist = */ false));
     handlers.push_back(op);
   }

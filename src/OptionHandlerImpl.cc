@@ -548,7 +548,7 @@ void LocalFilePathOptionHandler::parseArg(Option& option,
     option.put(pref_, DEV_STDIN);
   }
   else {
-    auto path = util::replace(optarg, "${HOME}", util::getHomeDir());
+    auto path = util::replace(optarg, "${HOME}", File::getCurrentDir());
     if (mustExist_) {
       File f(path);
       std::string err;
