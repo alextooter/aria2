@@ -76,4 +76,18 @@ std::string getOperatingSystemInfo();
 
 } // namespace aria2
 
+#ifdef _WIN32
+
+typedef LONG NTSTATUS;
+
+#ifndef STATUS_SUCCESS
+#define STATUS_SUCCESS   ((NTSTATUS)0x00000000L) // ntsubauth
+#endif
+
+extern "C" NTSYSAPI NTSTATUS NTAPI RtlGetVersion(
+    _Out_ PRTL_OSVERSIONINFOEXW lpVersionInformation
+);
+
+#endif // _WIN32
+
 #endif // D_FEATURE_CONFIG_H

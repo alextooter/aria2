@@ -305,8 +305,8 @@ std::string getOperatingSystemInfo()
 #ifdef _WIN32
   std::stringstream rv;
   rv << "Windows ";
-  OSVERSIONINFOEX ovi = {sizeof(OSVERSIONINFOEX)};
-  if (!GetVersionEx((LPOSVERSIONINFO)&ovi)) {
+  RTL_OSVERSIONINFOEXW ovi = {sizeof(RTL_OSVERSIONINFOEXW)};
+  if (RtlGetVersion((PRTL_OSVERSIONINFOEXW)&ovi) != STATUS_SUCCESS) {
     rv << "Unknown";
     return rv.str();
   }
@@ -314,37 +314,54 @@ std::string getOperatingSystemInfo()
     rv << "Legacy, probably XP";
     return rv.str();
   }
-  switch (ovi.dwMinorVersion) {
-  case 0:
-    if (ovi.wProductType == VER_NT_WORKSTATION) {
+  DWORD dwVersion = (ovi.dwMajorVersion << 24U) | (ovi.dwMinorVersion << 8U) |
+                    ovi.wProductType;
+#define WIN32_VERSION(major, minor, type)                                      \
+    ((major##U << 24U) | (minor##U << 8U) | type)
+  switch (dwVersion) {
+  case WIN32_VERSION(6, 0, VER_NT_WORKSTATION):
       rv << "Vista";
-    }
-    else {
+      break;
+  case WIN32_VERSION(6, 0, VER_NT_SERVER):
       rv << "Server 2008";
-    }
-    break;
-
-  case 1:
-    if (ovi.wProductType == VER_NT_WORKSTATION) {
+      break;
+  case WIN32_VERSION(6, 1, VER_NT_WORKSTATION):
       rv << "7";
-    }
-    else {
+      break;
+  case WIN32_VERSION(6, 1, VER_NT_SERVER):
       rv << "Server 2008 R2";
-    }
-    break;
-
+      break;
+  case WIN32_VERSION(6, 2, VER_NT_WORKSTATION):
+      rv << "8";
+      break;
+  case WIN32_VERSION(6, 2, VER_NT_SERVER):
+      rv << "Server 2012";
+      break;
+  case WIN32_VERSION(6, 3, VER_NT_WORKSTATION):
+      rv << "8.1";
+      break;
+  case WIN32_VERSION(6, 3, VER_NT_SERVER):
+      rv << "Server 2012 R2";
+      break;
+  case WIN32_VERSION(10, 0, VER_NT_WORKSTATION):
+      rv << "10";
+      break;
+  case WIN32_VERSION(10, 0, VER_NT_SERVER):
+      rv << "Server 2016";
+      break;
   default:
-    // Windows above 6.2 does not actually say so. :p
+      // Windows above 6.2 does not actually say so. :p
 
-    rv << ovi.dwMajorVersion;
-    if (ovi.dwMinorVersion) {
-      rv << "." << ovi.dwMinorVersion;
-    }
-    if (ovi.wProductType != VER_NT_WORKSTATION) {
-      rv << " Server";
-    }
-    break;
+      rv << ovi.dwMajorVersion;
+      if (ovi.dwMinorVersion) {
+          rv << "." << ovi.dwMinorVersion;
+      }
+      if (ovi.wProductType != VER_NT_WORKSTATION) {
+          rv << " Server";
+      }
+      break;
   }
+#undef WIN32_VERSION
   if (ovi.szCSDVersion[0]) {
     rv << " (" << ovi.szCSDVersion << ")";
   }
